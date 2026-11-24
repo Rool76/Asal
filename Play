@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>دفتر خمّن الشخصية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+  * { box-sizing: border-box; }
+
+  body { margin: 0; background: #fff; color: #202124; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); }
+
+  header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; background: #fff; z-index: 5; }
+
+  header .logo { width: 28px; height: 28px; border-radius: 4px; background: #f9ab00; display: grid; place-items: center; color: #fff; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+
+  header .meta { margin-inline-start: auto; font-size: 12px; color: #5f6368; }
+
+  main { max-width: 980px; margin: 0 auto; padding: 16px 12px 40px; }
+
+  .cell { display: grid; grid-template-columns: 56px 1fr; gap: 8px; margin-bottom: 18px; border-left: 3px solid transparent; padding-inline-start: 4px; }
+
+  .cell:focus-within { border-left-color: #f9ab00; }
+
+  .gutter { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 10px; }
+
+  .counter { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5f6368; }
+
+  .run { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #dadce0; background: #fff; cursor: pointer; color: #1a73e8; }
+
+  .run:hover { background: #e8f0fe; }
+
+  .run:focus-visible, .btn:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+
+  .body { min-width: 0; }
+
+  .code { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 14px; margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.6; direction: ltr; text-align: left; white-space: pre; overflow-x: auto; }
+
+  .out { margin-top: 8px; min-height: 8px; }
+
+  .err { color: #c5221f; font-family: 'IBM Plex Mono', monospace; font-size: 13px; direction: ltr; }
+
+  .board { display: flex; gap: 8px; margin-bottom: 12px; }
+
+  .board div { flex: 1; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px; text-align: center; font-size: 12px; color: #5f6368; }
+
+  .board b { display: block; font-size: 18px; color: #202124; }
+
+  .quote { font-size: 17px; line-height: 1.8; padding: 12px; background: #f1f3f4; border-radius: 8px; margin-bottom: 12px; }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 10px; font: inherit; font-size: 14px; cursor: pointer; color: #202124; }
+
+  .btn:hover { background: #e8f0fe; border-color: #1a73e8; }
+
+  .btn.primary { background: #1a73e8; color: #fff; border-color: #1a73e8; font-weight: 600; }
+
+  .btn.primary:hover { background: #1765cc; }
+
+  .ok { color: #137333; font-weight: 600; }
+
+  .bad { color: #c5221f; font-weight: 600; }
+
+  .result { margin-top: 12px; font-size: 14px; line-height: 1.8; }
+
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+
+  .bar { display: grid; gap: 2px; margin-bottom: 5px; font-size: 12px; color: #5f6368; }
+
+  .track { height: 7px; background: #e8eaed; border-radius: 4px; overflow: hidden; }
+
+  .fill { height: 100%; background: #1a73e8; border-radius: 4px; }
+
+  textarea, select { font: inherit; font-size: 14px; padding: 7px 9px; border: 1px solid #dadce0; border-radius: 6px; background: #fff; color: #202124; }
+
+  textarea { width: 100%; min-height: 70px; resize: vertical; }
+
+  .form-cell { border: 1px dashed #dadce0; border-radius: 8px; padding: 14px; background: #fafafa; }
+
+  label { display: block; font-size: 12px; color: #5f6368; margin: 8px 0 4px; }
+
+  @media (max-width: 560px) { .cell { grid-template-columns: 1fr; } .gutter { flex-direction: row; } }
+
+.tprog { height: 8px; background: #e8eaed; border-radius: 4px; overflow: hidden; margin: 10px 0 14px; }
+
+  .tprog div { height: 100%; background: #1a73e8; width: 0; transition: width .3s ease; }
+
+  .tcell { border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #fff; }
+
+  .tcell.locked { opacity: .5; }
+
+  .tcell.done { border-color: #137333; }
+
+  .tcell h3 { font-size: 15px; margin: 0 0 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .tcell p { font-size: 14px; line-height: 1.8; margin: 0 0 8px; }
+
+  .tbadge { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #5f6368; }
+
+  .tcell.done .tbadge { color: #137333; font-weight: 700; }
+
+  .tcell textarea { width: 100%; min-height: 70px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; direction: ltr; text-align: left; border: 1px solid #dadce0; border-radius: 6px; padding: 8px 10px; }
+
+  .thint, .tout { font-family: 'IBM Plex Mono', monospace; font-size: 13px; direction: ltr; text-align: left; white-space: pre-wrap; word-break: break-all; border-radius: 6px; padding: 10px 12px; margin: 8px 0; display: none; }
+
+  .thint { background: #f1f3f4; }
+
+  .tout { background: #f8f9fa; border-left: 3px solid #137333; }
+
+  .thint.show, .tout.show { display: block; }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<header>
+
+  <div class="logo">Cb</div>
+
+  <h1>دفتر خمّن الشخصية</h1>
+
+  <div class="meta" id="stat">جاري التحميل...</div>
+
+</header>
+
+
+
+<main>
+
+
+
+  <!-- الخلية 1: البيانات -->
+
+  <section class="cell">
+
+    <div class="gutter"><span class="counter">[1]</span><button class="run" data-run="src-1" aria-label="تشغيل الخلية 1">▶</button></div>
+
+    <div class="body"><pre class="code" data-show="src-1"></pre><div class="out" data-out="src-1"></div></div>
+
+  </section>
+
+  <script type="text/plain" id="src-1">
+
+// ============ الخلية 1: بيانات التدريب وجمل اللعبة ============
+
+// كل صف = [النص, التصنيف]. التصنيفات: brave شجاع، comic كوميدي، sad حزين، worry مهوجس، kafu كفو، neutral محايد
+
+var DATA = [
+
+  ["ابشر بعزك، أنا لها", "brave"], ["ما عليك، أنا أتقدم وأحل المشكلة", "brave"], ["ما يخاف من أي مغامرة ويدخل أول واحد", "brave"],
+
+  ["يتقدم الصفوف في أي موقف صعب", "brave"], ["واثق من نفسه وما يتردد أبداً", "brave"], ["أنا أروح الكهف لحالي ولا أخاف", "brave"],
+
+  ["خلّها عليّ، أنا أتصرف", "brave"], ["ما أحد يوقفني، أنا قدها", "brave"], ["يقدم نفسه للمهمات الخطيرة بكل ثقة", "brave"],
+
+  ["قال: الخوف ما يحل شي، يلا نمشي", "brave"], ["وقت النشبة يفزع أول واحد ويروح", "brave"], ["لما تصير المشكلة يركض قبل الكل", "brave"],
+
+  ["يقول: أنا اللي بروح للمكان الخطر معك", "brave"], ["الكلمة وحدة وهو موجود بالنشبات", "brave"],
+
+  ["😂😂 ما أقدر والله", "comic"], ["💀💀 تقتل ضحك", "comic"], ["تضحك على كل شي وتغير جو الجلسة", "comic"],
+
+  ["دايم ترسل إيموجي 😂", "comic"], ["تحب الفلة والوناسة", "comic"], ["نكتة وحدة منها وكلنا نضحك", "comic"],
+
+  ["ههههه يا رجال انت تموت ضحك", "comic"], ["تذب ذبات تقتل ضحك", "comic"], ["كل ما كانت الجلسة كئيبة تفلها بنكتة", "comic"],
+
+  ["💀 الله يخليك ما تقدر تسكت", "comic"],
+
+  ["الدنيا ما تسوى، عادي تعودت", "sad"], ["تتنهد كثير وتقول عادي", "sad"], ["تسمع أغاني حزينة طول الليل", "sad"],
+
+  ["تحب المطر والشتاء وتحس بالكآبة", "sad"], ["ملامحها هادية وفيها شوية حزن", "sad"], ["قالت: تعبت من كل شي بس ما فيه فايدة", "sad"],
+
+  ["تجلس لحالها وتتذكر اللي راح", "sad"], ["ما عندها حماس وتكتفي بالصمت", "sad"], ["تحس إن الدنيا ثقيلة عليها", "sad"],
+
+  ["دموعها قريبة لما تسمع أغنية قديمة", "sad"],
+
+  ["تخيل لو ما نجحت وش بيصير بعدين؟", "worry"], ["طول الوقت سرحان ويهوجس", "worry"], ["يسهر الليل يفكر في سيناريوهات ما صارت", "worry"],
+
+  ["عيونه تلمع من كثر التفكير", "worry"], ["دايم يقول: تخيل لو صار كذا", "worry"], ["وش بيصير لو الشي خرب؟", "worry"],
+
+  ["يفكر في كل احتمال ويعيش فيه", "worry"], ["شارد وكأنه يحسب سيناريوهات", "worry"], ["يتخيل المشاكل قبل ما تصير", "worry"],
+
+  ["ما يقدر ينام لأنه يفكر في الهواجيس", "worry"],
+
+  ["أنا موجود إذا احتجت شي، لا تتردد", "kafu"], ["اتصلوا عليه الناس وقت الطوارئ وما يتأخر", "kafu"], ["راعي الفزعات، أي أحد يحتاجه يلقاه", "kafu"],
+
+  ["يساعد الكل ويرد على الجميع بأي وقت", "kafu"], ["إذا أحد تعب ينفعه بكل شي", "kafu"], ["ما يتأخر عن أي مساعدة يطلبونها منه", "kafu"],
+
+  ["يحل المشكلة لكل أحد ويرجع يسأل: تبي شي ثاني؟", "kafu"], ["الكل يعرف إنه الملجأ وقت الشدة", "kafu"],
+
+  ["وش تبي نسوي اليوم؟", "neutral"], ["الجو حار شوي اليوم", "neutral"], ["أبغى أكل رز مع دجاج", "neutral"],
+
+  ["الساعة كم الحين؟", "neutral"], ["تعال نروح السوق بعد العصر", "neutral"], ["خلصت الشغل وبروح البيت", "neutral"],
+
+  ["ركبت السيارة وطلعت", "neutral"], ["اشتريت جوال جديد من المحل", "neutral"]
+
+];
+
+
+
+// جمل اللعبة (ما هي في بيانات التدريب)
+
+var PUZZLES = [
+
+  ["ما أحد يقدر يوقف طارق لما يبدأ الشغل الخطير", "brave"],
+
+  ["اقتحم الباب أول واحد لما سمع الصراخ", "brave"],
+
+  ["تضحك لين تبكي من النكت", "comic"],
+
+  ["اضحك وخلها نكتة، ما فيه شي يستاهل الزعل", "comic"],
+
+  ["ليش الدنيا كذا؟ ما أبغى أشوف أحد", "sad"],
+
+  ["أحس الليل طويل وما أقدر أنام من الحزن", "sad"],
+
+  ["وش لو الشركة تفلس بكرة؟ وش بيصير بعدين؟", "worry"],
+
+  ["تخيل لو صار شي لأهلي وش أسوي؟", "worry"],
+
+  ["انا عندي اتصال طوارئ، روحوا ساعدوه قبل ما يتأخر", "kafu"],
+
+  ["ارتاح وقت ما تحتاج، أنا جاهز أساعد", "kafu"]
+
+];
+
+
+
+var LABEL_AR = { brave: "شجاع", comic: "كوميدي", sad: "حزين", worry: "مهوجس", kafu: "كفو", neutral: "محايد" };
+
+var CHOICES = ["brave", "comic", "sad", "worry", "kafu"];
+
+var THRESHOLD = 0.45; // أقل من هذي الثقة نقول "غير واضح"
+
+  </script>
+
+
+
+  <!-- الخلية 2: النموذج -->
+
+  <section class="cell">
+
+    <div class="gutter"><span class="counter">[2]</span><button class="run" data-run="src-2" aria-label="تشغيل الخلية 2">▶</button></div>
+
+    <div class="body"><pre class="code" data-show="src-2"></pre><div class="out" data-out="src-2"></div></div>
+
+  </section>
+
+  <script type="text/plain" id="src-2">
+
+// ============ الخلية 2: Multinomial Naive Bayes ============
+
+
+
+// تنظيف النص العربي: حذف التشكيل، توحيد الأحرف، وإزالة علامات الترقيم
+
+function normalize(text) {
+
+  return text.replace(/[\u064B-\u0652]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
+
+    .replace(/[\u060C\u061B\u061F.,!?…"'()\-]/g, " ").toLowerCase().trim();
+
+}
+
+
+
+// تحويل النص لميزات: كلمات مفردة + كلمتين متتاليتين، والإيموجي كل واحد لحاله
+
+function tokenize(text) {
+
+  var spaced = normalize(text).replace(/([\u{1F300}-\u{1FAFF}\u2600-\u27BF])/gu, " $1 ");
+
+  var words = spaced.split(/\s+/).filter(function (w) { return w.length > 0; });
+
+  var tokens = words.slice();
+
+  // لوب for: يبني الكلمتين المتتاليتين
+
+  for (var i = 0; i < words.length - 1; i++) tokens.push(words[i] + "_" + words[i + 1]);
+
+  return tokens;
+
+}
+
+
+
+// تدريب النموذج: نعد كل ميزة لكل تصنيف ونعد عدد الأمثلة لكل تصنيف
+
+function trainNB(data) {
+
+  var m = { classes: [], docCount: {}, wordCount: {}, totalWords: {}, vocab: {}, N: data.length };
+
+  // لوب forEach: يمر على كل مثال
+
